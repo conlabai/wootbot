@@ -29,13 +29,27 @@ class ConversationState:
                     host=os.getenv('POSTGRES_HOST')
                 )
                 logging.debug("Connected to database.")
+                
+                # Creating states table
                 await self.conn.execute('''
                     CREATE TABLE IF NOT EXISTS states (
                         conversation_id INT PRIMARY KEY,
                         state TEXT
                     )
                 ''')
-                logging.debug("Table created.")
+                logging.debug("States table created.")
+                
+                # Creating messages table
+                await self.conn.execute('''
+                    CREATE TABLE IF NOT EXISTS messages (
+                        id SERIAL PRIMARY KEY,
+                        conversation_id INT,
+                        message TEXT,
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                    )
+                ''')
+                logging.debug("Messages table created.")
+                
                 break
             except Exception as e:
                 logging.error(f"Error setting up database: {e}")
@@ -61,6 +75,15 @@ class ConversationState:
         except Exception as e:
             logging.error(f"Error setting state: {e}")
 
+    async def save_message(self, conversation_id, message):
+        try:
+            await self.state_model.conn.execute('''
+                INSERT INTO messages (conversation_id, message, created_at) VALUES ($1, $2, $3)
+            ''', conversation_id, message)
+        except Exception as e:
+            logging.error(f"Error saving message: {e}")
+
+
 
 class ChatActions:
     def __init__(self, state_model):
@@ -78,6 +101,8 @@ class ChatActions:
             message_status = event.get('conversation', {}).get('status')
             conversation_id = event.get('conversation', {}).get('id')
             account_id = event.get('account', {}).get('id')
+            message = event.get('conversation', {}).get('messages').get('content')
+            created_at = event.get('conversation', {}).get('messages').get('created_at')
             
             # Check that it's an incoming message and conversation is pending   
             if message_type != "incoming" or event_type != "message_created" or message_status != "pending":
@@ -92,6 +117,7 @@ class ChatActions:
                 await self.state_model.set_state(conversation_id, 'greeted')
             # If the conversation is in the greeted or handoff state, send a handoff message
             elif state == 'greeted' or state == 'handoff':
+                await self.save_message(conversation_id, message, created_at)
                 await self.send_handoff_message(conversation_id, account_id)
                 await self.execute_handoff_action(conversation_id, account_id)
                 await self.state_model.set_state(conversation_id, 'handoff')
