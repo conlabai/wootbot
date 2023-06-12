@@ -21,7 +21,8 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
             echo "DOCKER_TAG=conlab/wootbot:latest" >> $GITHUB_ENV
           else
-            echo "DOCKER_TAG=conlab/wootbot:${{ github.ref }}" >> $GITHUB_ENV
+            REF_NAME=$(echo "${{ github.ref }}" | sed -e 's@refs/tags/@@') 
+            echo "DOCKER_TAG=conlab/wootbot:$REF_NAME" >> $GITHUB_ENV
           fi
 
       - name: Login to DockerHub
