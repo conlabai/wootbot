@@ -1,6 +1,6 @@
 version: '3.8'
 services:
-  app:
+  bot:
     image: conlab/wootbot:latest
     ports:
       - "8080:8080"
