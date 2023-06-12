@@ -75,7 +75,7 @@ class ConversationState:
         except Exception as e:
             logging.error(f"Error setting state: {e}")
 
-    async def save_message(self, conversation_id, message):
+    async def save_message(self, conversation_id, message, creeated_at):
         try:
             await self.state_model.conn.execute('''
                 INSERT INTO messages (conversation_id, message, created_at) VALUES ($1, $2, $3)
@@ -101,8 +101,9 @@ class ChatActions:
             message_status = event.get('conversation', {}).get('status')
             conversation_id = event.get('conversation', {}).get('id')
             account_id = event.get('account', {}).get('id')
-            message = event.get('conversation', {}).get('messages').get('content')
-            created_at = event.get('conversation', {}).get('messages').get('created_at')
+            first_message_dict = event.get('conversation', {}).get('messages', [{}])[0]  # Get first message or default to empty dict
+            message = first_message_dict.get('content')
+            created_at = first_message_dict.get('created_at')
             
             # Check that it's an incoming message and conversation is pending   
             if message_type != "incoming" or event_type != "message_created" or message_status != "pending":
@@ -117,7 +118,7 @@ class ChatActions:
                 await self.state_model.set_state(conversation_id, 'greeted')
             # If the conversation is in the greeted or handoff state, send a handoff message
             elif state == 'greeted' or state == 'handoff':
-                await self.save_message(conversation_id, message, created_at)
+                await self.state_model.save_message(conversation_id, message, created_at)
                 await self.send_handoff_message(conversation_id, account_id)
                 await self.execute_handoff_action(conversation_id, account_id)
                 await self.state_model.set_state(conversation_id, 'handoff')
@@ -127,7 +128,7 @@ class ChatActions:
 
             return {}
         except Exception as e:
-            return {"message": "Error"}
+            logging.error(f"Error handling event: {e}")
 
     async def send_greeting(self, conversation_id, account_id):
         try:
