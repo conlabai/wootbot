@@ -45,10 +45,6 @@ The bot will be accessible via http://wootbot:8080 inside Chatwoot docker networ
 
 ## Environment Setup:
 
-Copy the `.env.example` file to a chatwoot `.env` file:
-
-Now, adjust the following environment variables in the `.env` file:
-
 - `GREETING_MESSAGE`: Custom greeting message dispatched by the bot.
 - `HANDOFF_MESSAGE`: Message delivered when the bot is handing off to a human agent.
 - `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_HOST`: Credentials for your PostgreSQL setup.
