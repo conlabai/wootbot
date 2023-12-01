@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Simple Agent Bot is a FastAPI based application integrated with Chatwoot. Upon receiving a new message, the bot sends a greeting, after receiving second message answers with a notification about transferring the conversation to a human agent, changes the dialogue status in Chatwoot to 'Open'.
+Simple Agent Bot is a FastAPI based application integrated with Chatwoot. Upon receiving a new message, the bot sends a greeting, after receiving second message answers with a notification about transferring the conversation to a human agent and change the dialogue status in Chatwoot to 'Open'.
 
 ## Adding WootBot to Chatwoot Docker Stack
 
