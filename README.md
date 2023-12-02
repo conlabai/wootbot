@@ -17,7 +17,7 @@ services:
   wootbot:
     image: conlab/wootbot:latest
     environments:
-      - GREETING_MESSAGE=Hello, I am Wootbot. I am here to help you with your queries. How can I help you today?
+      - GREETING_MESSAGE=Hi, I am Wootbot. How can I help you today?
       - HANDOFF_MESSAGE=Transferring you to a human agent. Please wait.
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=paste_wootbot_password_here
